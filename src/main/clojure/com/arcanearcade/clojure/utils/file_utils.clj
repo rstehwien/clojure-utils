@@ -56,12 +56,3 @@
 (defn files-ending-with [path suffix]
   (filter-files-ends-with (get-cached-files path) suffix))
 
-(count (files-ending-with "should_not_exist1" ".zip"))
-(count (files-ending-with "should_not_exist2" ".zip"))
-(count (files-ending-with "should_not_exist3" ".zip"))
-
-
-(defn -main
-  ([greetee]
-    (println (str "fileutils2 Hello " greetee "!")))
-  ([] (-main "world")))
