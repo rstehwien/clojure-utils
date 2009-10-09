@@ -11,5 +11,3 @@
   (file-utils/get-cached-files "should_not_exist1")
   (is (some #{"should_not_exist1"} (keys @file-utils/file-seq-cache)))
   )
-
-(run-tests)
