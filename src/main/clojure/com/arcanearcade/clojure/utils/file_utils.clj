@@ -1,58 +1,60 @@
 (ns com.arcanearcade.clojure.utils.file-utils
-  (:gen-class)
+  (:require [clojure.contrib.duck-streams :as duck-streams])
+  (:require [clojure.contrib.java-utils :as java-utils])
   (:import (java.io File)))
 
-(comment
+(defn re-match? [re s] (not (nil? (re-matches re s))))
 
-(defmulti cd class)
-(defmethod cd String [s])
-(defmethod cd File [f])
+(comment "cd" isn't a valid command in Java as there is no reliable way to change the working directory)
 
-(defn pwd)
+(def file java-utils/file)
 
-(defmulti mkdir class)
-(defmethod mkdir String [s])
-(defmethod mkdir File [f])
+(defn make-parents [f] (duck-streams/make-parents (file f)))
 
-(defmulti mkdirs class)
-(defmethod mkdirs String [s])
-(defmethod mkdirs File [f])
+(def pwd duck-streams/pwd)
 
-(defmulti rmdir class)
-(defmethod rmdir String [s])
-(defmethod rmdir File [f])
+(defn touch [f] (duck-streams/append-spit (file f) ""))
 
-(defmulti mv (fn [from to] [(class from) (class to)]))
-(defmethod mv [String String] [from to] (println "Both strings"))
-(defmethod mv [File File] [from to] (println "Both files"))
-(defmethod mv [File String] [from to] (println "File String"))
-(defmethod mv [String File] [from to] (println "String File"))
+(defn mv [from to] (.renameTo (file from) (file to)))
 
-)
+(defn ls
+  ([] (ls "."))
+  ([f] (seq (.listFiles (file f)))))
 
-(defn mv [from to]
-  (let [f (if (= (class from) File) from (File. from))
-        t (if (= (class to) File) from (File. to))]
-    (println "transformed to File")))
+(defn ls_r
+  ([] (ls_r "."))
+  ([f] (file-seq (file f))))
+
+(defn mkdir [f] (.mkdir (file f)))
+
+(defn mkdirs [f] (.mkdirs (file f)))
+
+(defn rm [f] (.delete (file f)))
+
+(defn rm_rf [path]
+  (let [p (file path)]
+    (if (.isDirectory p) (doseq [cur (ls p)] (rm_rf cur)))
+    (rm p)))
+
+(defn filter-files [files re]
+  (filter #(re-match? re (.toString %)) files))
+
+(defn filter-files-ends-with [files suffix]
+  (filter #(.. % toString (endsWith suffix)) files))
 
 (def file-seq-cache (ref {}))
 
-(defn clear-cached-files
+(defn clear-file-seq-cache
   ([]
      (dosync (alter file-seq-cache empty)))
   ([& ks]
      (dosync (doseq [key ks] (alter file-seq-cache dissoc key)))
      @file-seq-cache))
 
-(defn get-cached-files [path]
+(defn get-file-seq-cache [path]
   (dosync
     (when-not (contains? @file-seq-cache path)
       (alter file-seq-cache conj {path (file-seq (File. path))}))
     (@file-seq-cache path)))
 
-(defn filter-files-ends-with [files suffix]
-  (filter #(.. % toString (endsWith suffix)) files))
-
-(defn files-ending-with [path suffix]
-  (filter-files-ends-with (get-cached-files path) suffix))
 
