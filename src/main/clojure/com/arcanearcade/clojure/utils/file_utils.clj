@@ -1,18 +1,50 @@
 (ns com.arcanearcade.clojure.utils.file-utils
-  (:require [clojure.contrib.duck-streams :as duck-streams])
-  (:require [clojure.contrib.java-utils :as java-utils])
-  (:use [com.arcanearcade.clojure.utils.regex-utils])
+  #^{:author "Robert Stehwien",
+     :doc "A Clojure wrapper for java.io.File plus useful utilities"}
+  (:require [clojure.contrib.duck-streams :as du])
+  (:require [clojure.contrib.java-utils :as ju])
+  (:require [com.arcanearcade.clojure.utils.regex-utils :as ru])
   (:import (java.io File)))
 
 (comment "cd" isn't a valid command in Java as there is no reliable way to change the working directory)
 
-(def file java-utils/file)
+(def file ju/file)
 
-(defn make-parents [f] (duck-streams/make-parents (file f)))
+(def separator (File/separator))
+(def path-separator (File/pathSeparator))
+(defn read? [f] (.canRead (file f)))
+(defn write? [f] (.canWrite (file f)))
 
-(def pwd duck-streams/pwd)
+(defmulti equals? (fn[f o] (class o)))
+(defmethod equals? String [f #^String s] (.equals (file f) (file s)))
+(defmethod equals? File [f #^File o] (.equals f o))
+(defmethod equals? :default [f o] (.equals (file f) o))
 
-(defn touch [f] (duck-streams/append-spit (file f) ""))
+(defn absolute? [f] (.isAbsolute (file f)))
+(defn #^File absolute-file [f] (.getAbsoluteFile (file f)))
+(defn #^String absolute-path [f] (.getAbsolutePath (file f)))
+
+(defn absolute-path-equals? [f1 f2] (= (absolute-path f1) (absolute-path f2)))
+
+(defn exists?
+  ([f] (.exists (file f)))
+  ([f col] (some #(absolute-path-equals? % f) col)))
+
+(defn not-exists?
+  ([f] (not (exists? f)))
+  ([f col] (not (exists? f col))))
+
+(defn directory? [f] (.isDirectory (file f)))
+(defn file? [f] (.isFile (file f)))
+(defn hidden? [f] (.isHidden (file f)))
+
+(defn make-parents [f] (du/make-parents (file f)))
+(defn #^String parent [f] (.getParent (file f)))
+(defn #^File parent-file [f] (.getParentFile (file f)))
+
+(def pwd du/pwd)
+
+(defn touch [f] (du/append-spit (file f) ""))
 
 (defn mv [from to] (.renameTo (file from) (file to)))
 
@@ -34,10 +66,10 @@
 
 (defn rm_rf [path]
   (let [p (file path)]
-    (if (.isDirectory p) (doseq [cur (ls p)] (rm_rf cur)))
+    (if (directory? p) (doseq [cur (ls p)] (rm_rf cur)))
     (rm p)))
 
-(defn filter-files [files re] (re-filter re files))
+(defn re-filter-files [re files] (ru/re-filter re files))
 
 (def file-seq-cache (ref {}))
 
