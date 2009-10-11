@@ -3,7 +3,7 @@
   (:use clojure.contrib.test-is))
 
 (deftest test-empty-files-ending-with
-  (is (= (count (file-utils/filter-files-ends-with (file-utils/ls "should_not_exist1") ".zip")) 0)))
+  (is (= (count (file-utils/filter-files (file-utils/ls "should_not_exist1") #".*zip")) 0)))
 
 (deftest test-keys-file-seq-cache
   (file-utils/clear-file-seq-cache)

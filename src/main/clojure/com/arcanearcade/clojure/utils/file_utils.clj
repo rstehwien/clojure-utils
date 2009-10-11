@@ -1,9 +1,8 @@
 (ns com.arcanearcade.clojure.utils.file-utils
   (:require [clojure.contrib.duck-streams :as duck-streams])
   (:require [clojure.contrib.java-utils :as java-utils])
+  (:use [com.arcanearcade.clojure.utils.regex-utils])
   (:import (java.io File)))
-
-(defn re-match? [re s] (not (nil? (re-matches re s))))
 
 (comment "cd" isn't a valid command in Java as there is no reliable way to change the working directory)
 
@@ -38,15 +37,11 @@
     (if (.isDirectory p) (doseq [cur (ls p)] (rm_rf cur)))
     (rm p)))
 
-(defn filter-files [files re]
-  (filter #(re-match? re (.toString %)) files))
-
-(defn filter-files-ends-with [files suffix]
-  (filter #(.. % toString (endsWith suffix)) files))
+(defn filter-files [files re] (re-filter re files))
 
 (def file-seq-cache (ref {}))
 
-(defn file-seq-cache-key [f] (.toString (file f)))
+(defn file-seq-cache-key [f] (str (file f)))
 
 (defn clear-file-seq-cache
   ([]
