@@ -1,13 +1,13 @@
 (ns com.arcanearcade.clojure.utils.test-file-utils
   (:require [com.arcanearcade.clojure.utils.file-utils :as file-utils])
-  (:use clojure.contrib.test-is))
+  (:use clojure.test))
 
 (deftest test-empty-files-ending-with
-  (is (= (count (file-utils/filter-files (file-utils/ls "should_not_exist1") #".*zip")) 0)))
+  (is (= 0 (count (file-utils/filter-files (file-utils/ls "should_not_exist1") #".*zip")))))
 
 (deftest test-keys-file-seq-cache
   (file-utils/clear-file-seq-cache)
-  (is (= (count (keys @file-utils/file-seq-cache)) 0))
+  (is (= 0 (count (keys @file-utils/file-seq-cache))))
   (file-utils/get-file-seq-cache "should_not_exist1")
   (is (some #{"should_not_exist1"} (keys @file-utils/file-seq-cache)))
   )
