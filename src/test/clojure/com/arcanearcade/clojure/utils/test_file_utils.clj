@@ -100,6 +100,30 @@
     (fu/touch test-file)
     (is (fu/exists? test-file))))
 
+(deftest test-mv
+  (let [dir1  (fu/file test-dir "foo")
+        dir2 (fu/file test-dir "smeggle")]
+    (fu/mkdirs (fu/file dir1 "bar" "baz"))
+    (fu/touch (fu/file dir1 "bar" "baz" "mine.txt"))
+    (is (fu/not-exists? dir2 (fu/ls test-dir)))
+    (is (fu/exists? (fu/file dir1 "bar" "baz" "mine.txt") (fu/ls_r test-dir)))
+    (fu/mv dir1 dir2)
+    (is (fu/not-exists? dir1 (fu/ls test-dir)))
+    (is (fu/exists? (fu/file dir2 "bar" "baz" "mine.txt") (fu/ls_r test-dir)))
+    ))
+
+(deftest test-cp
+  (let [dir1  (fu/file test-dir "foo")
+        dir2 (fu/file test-dir "smeggle")]
+    (fu/mkdirs (fu/file dir1 "bar" "baz"))
+    (fu/touch (fu/file dir1 "bar" "baz" "mine.txt"))
+    (is (fu/not-exists? dir2 (fu/ls test-dir)))
+    (is (fu/exists? (fu/file dir1 "bar" "baz" "mine.txt") (fu/ls_r test-dir)))
+    (fu/cp dir1 dir2)
+    (is (fu/exists? (fu/file dir1 "bar" "baz" "mine.txt") (fu/ls_r test-dir)))
+    (is (fu/exists? (fu/file dir2 "bar" "baz" "mine.txt") (fu/ls_r test-dir)))
+    ))
+
 (deftest test-ls
   (is (fu/exists? test-dir (fu/ls)))
   (is (fu/not-exists? (fu/file test-dir "not_exist") (fu/ls test-dir)))
