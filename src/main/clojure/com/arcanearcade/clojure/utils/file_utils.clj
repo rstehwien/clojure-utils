@@ -36,12 +36,18 @@
   ([f col] (not (exists? f col))))
 
 (defn directory? [f] (.isDirectory (file f)))
+
 (defn file? [f] (.isFile (file f)))
+
 (defn hidden? [f] (.isHidden (file f)))
 
 (defn make-parents [f] (du/make-parents (file f)))
+
 (defn #^String parent [f] (.getParent (file f)))
+
 (defn #^File parent-file [f] (.getParentFile (file f)))
+
+(defn file-name [f] (.getName (file f)))
 
 (def pwd du/pwd)
 
@@ -49,7 +55,9 @@
 
 (defn mv [from to] (.renameTo (file from) (file to)))
 
-(defn cp [from to] (str "TODO copy " from " to " to))
+(defn mkdir [f] (.mkdir (file f)))
+
+(defn mkdirs [f] (.mkdirs (file f)))
 
 (defn ls
   ([] (ls "."))
@@ -59,11 +67,15 @@
   ([] (ls_r "."))
   ([f] (file-seq (file f))))
 
-(defn mkdir [f] (.mkdir (file f)))
-
-(defn mkdirs [f] (.mkdirs (file f)))
+(defn cp [from to]
+  (let [dest (if (directory? to) (file to (file-name from)) to)]
+    (if (directory? from)
+      (do (mkdir dest)
+          (doseq [cur (ls from)] (cp cur dest)))
+      (du/copy from dest))))
 
 (defn rm [f] (.delete (file f)))
+(defn delete-on-exit [f] (.deleteOnExit (file f)))
 
 (defn rm_rf [path]
   (let [p (file path)]
