@@ -1,6 +1,6 @@
 (ns
-  #^{:author "Robert Stehwien",
-     :doc "A Clojure wrapper for java.io.File plus useful utilities"}
+    #^{:author "Robert Stehwien",
+       :doc "A Clojure wrapper for java.io.File plus useful utilities"}
   com.arcanearcade.clojure.utils.file-utils
   (:require [clojure.contrib.duck-streams :as du])
   (:require [clojure.contrib.java-utils :as ju])
@@ -85,22 +85,24 @@
 (defn re-filter-files [re files] (ru/re-filter re files))
 (defn re-exists? [re files] (not-empty (re-filter-files re files)))
 
-(def file-seq-cache (ref {}))
+(let [file-seq-cache (ref {})]
 
-(defn file-seq-cache-key [f] (str (file f)))
+  (defn file-seq-cache-key [f] (str (file f)))
 
-(defn clear-file-seq-cache
-  ([]
-     (dosync (alter file-seq-cache empty)))
-  ([& paths]
-     (dosync (doseq [key (map file-seq-cache-key paths)] (alter file-seq-cache dissoc key)))
-     @file-seq-cache))
+  (defn file-seq-cache-keys [] (keys @file-seq-cache))
 
-(defn get-file-seq-cache [path]
-  (let [f (file path) key (file-seq-cache-key f)]
-    (dosync
-     (when-not (contains? @file-seq-cache key)
-       (alter file-seq-cache conj {path (file-seq (file key))}))
-     (@file-seq-cache key))))
+  (defn clear-file-seq-cache
+    ([]
+       (dosync (alter file-seq-cache empty)))
+    ([& paths]
+       (dosync (doseq [key (map file-seq-cache-key paths)] (alter file-seq-cache dissoc key)))
+       @file-seq-cache))
 
+  (defn get-file-seq-cache [path]
+    (let [f (file path) key (file-seq-cache-key f)]
+      (dosync
+       (when-not (contains? @file-seq-cache key)
+         (alter file-seq-cache conj {path (file-seq (file key))}))
+       (@file-seq-cache key))))
 
+  )

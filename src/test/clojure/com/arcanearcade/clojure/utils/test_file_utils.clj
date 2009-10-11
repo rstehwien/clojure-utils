@@ -137,46 +137,43 @@
     (is (fu/not-exists? subfile (fu/ls test-dir)))
     ))
 
-;; TODO get rid of calls to not-any? and some in favor of
-;; fu/not-exists? and fu/exists?
-
 (deftest test-mkdir
   (let [subdir (fu/file test-dir "my_subdir")]
-    (is (not-any? #(fu/equals? % subdir) (fu/ls test-dir)))
+    (is (fu/not-exists? subdir (fu/ls test-dir)))
     (fu/mkdir subdir)
-    (is (some #(fu/equals? % subdir) (fu/ls test-dir)))
+    (is (fu/exists? subdir (fu/ls test-dir)))
     ))
 
 (deftest test-mkdirs
   (let [subsubdir (fu/file test-dir "my_subdir" "another_subdir")]
-    (is (not-any? #(fu/equals? % subsubdir) (fu/ls_r test-dir)))
+    (is (fu/not-exists? subsubdir (fu/ls_r test-dir)))
     (is (not (fu/mkdir subsubdir)))
-    (is (not-any? #(fu/equals? % subsubdir) (fu/ls_r test-dir)))
+    (is (fu/not-exists? subsubdir (fu/ls_r test-dir)))
     (is (fu/mkdirs subsubdir))
-    (is (some #(fu/equals? % subsubdir) (fu/ls_r test-dir)))
-    (is (not-any? #(fu/equals? % subsubdir) (fu/ls test-dir)))
+    (is (fu/exists? subsubdir (fu/ls_r test-dir)))
+    (is (fu/not-exists? subsubdir (fu/ls test-dir)))
     ))
 
 (deftest test-rm-file
   (let [file (fu/file test-dir "a_new_file")]
-    (is (not-any? #(fu/absolute-path-equals? % file) (fu/ls test-dir)))
+    (is (fu/not-exists? file (fu/ls test-dir)))
     (fu/touch file)
-    (is (some #(fu/absolute-path-equals? % file) (fu/ls test-dir)))
+    (is (fu/exists? file (fu/ls test-dir)))
     (fu/rm file)
-    (is (not-any? #(fu/absolute-path-equals? % file) (fu/ls test-dir)))
+    (is (fu/not-exists? file (fu/ls test-dir)))
     ))
 
 (deftest test-rm_rf-file
   (let [subdir (fu/file test-dir "new_subdir")
         file (fu/file subdir "a_new_file")]
-    (is (not-any? #(fu/absolute-path-equals? % file) (fu/ls_r test-dir)))
+    (is (fu/not-exists? file (fu/ls_r test-dir)))
     (fu/make-parents file)
     (fu/touch file)
     (is (fu/exists? file (fu/ls_r test-dir)))
     (is (not (fu/rm subdir)))
-    (is (some #(fu/absolute-path-equals? % file) (fu/ls_r test-dir)))
+    (is (fu/exists? file (fu/ls_r test-dir)))
     (is (fu/rm_rf subdir))
-    (is (not-any? #(fu/absolute-path-equals? % subdir) (fu/ls_r test-dir)))
+    (is (fu/not-exists? file (fu/ls_r test-dir)))
     ))
 
 (deftest test-re-filter-files-pass
@@ -195,7 +192,7 @@
 
 (deftest test-keys-file-seq-cache
   (fu/clear-file-seq-cache)
-  (is (= 0 (count (keys @fu/file-seq-cache))))
+  (is (= 0 (count (fu/file-seq-cache-keys))))
   (fu/get-file-seq-cache "should_not_exist1")
-  (is (some #{"should_not_exist1"} (keys @fu/file-seq-cache)))
+  (is (some #{"should_not_exist1"} (fu/file-seq-cache-keys)))
   )
