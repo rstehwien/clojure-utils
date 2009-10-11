@@ -17,6 +17,8 @@
 
 (defn mv [from to] (.renameTo (file from) (file to)))
 
+(defn cp [from to] (str "TODO copy " from " to " to))
+
 (defn ls
   ([] (ls "."))
   ([f] (seq (.listFiles (file f)))))
@@ -44,17 +46,20 @@
 
 (def file-seq-cache (ref {}))
 
+(defn file-seq-cache-key [f] (.toString (file f)))
+
 (defn clear-file-seq-cache
   ([]
      (dosync (alter file-seq-cache empty)))
-  ([& ks]
-     (dosync (doseq [key ks] (alter file-seq-cache dissoc key)))
+  ([& paths]
+     (dosync (doseq [key (map file-seq-cache-key paths)] (alter file-seq-cache dissoc key)))
      @file-seq-cache))
 
 (defn get-file-seq-cache [path]
-  (dosync
-    (when-not (contains? @file-seq-cache path)
-      (alter file-seq-cache conj {path (file-seq (File. path))}))
-    (@file-seq-cache path)))
+  (let [f (file path) key (file-seq-cache-key f)]
+    (dosync
+     (when-not (contains? @file-seq-cache key)
+       (alter file-seq-cache conj {path (file-seq (file key))}))
+     (@file-seq-cache key))))
 
 
