@@ -71,6 +71,7 @@
     (rm p)))
 
 (defn re-filter-files [re files] (ru/re-filter re files))
+(defn re-exists? [re files] (not-empty (re-filter-files re files)))
 
 (def file-seq-cache (ref {}))
 

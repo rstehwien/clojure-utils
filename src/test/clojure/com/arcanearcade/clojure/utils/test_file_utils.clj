@@ -179,11 +179,17 @@
     (is (not-any? #(fu/absolute-path-equals? % subdir) (fu/ls_r test-dir)))
     ))
 
-(deftest test-filter-files-pass
+(deftest test-re-filter-files-pass
   (is (< 0 (count (fu/re-filter-files #"\..*txt" (fu/ls test-dir))))))
 
-(deftest test-filter-files-fail
+(deftest test-re-filter-files-fail
   (is (= 0 (count (fu/re-filter-files #".*zip" (fu/ls test-dir))))))
+
+(deftest test-re-exists?-files-pass
+  (is (fu/re-exists? #"\..*txt" (fu/ls test-dir))))
+
+(deftest test-re-exists?-files-fail
+  (is (not (fu/re-exists? #".*zip" (fu/ls test-dir)))))
 
 ;; TODO test the cache some more
 
