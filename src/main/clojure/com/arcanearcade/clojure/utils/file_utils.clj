@@ -1,12 +1,13 @@
-(ns com.arcanearcade.clojure.utils.file-utils
+(ns
   #^{:author "Robert Stehwien",
      :doc "A Clojure wrapper for java.io.File plus useful utilities"}
+  com.arcanearcade.clojure.utils.file-utils
   (:require [clojure.contrib.duck-streams :as du])
   (:require [clojure.contrib.java-utils :as ju])
   (:require [com.arcanearcade.clojure.utils.regex-utils :as ru])
   (:import (java.io File)))
 
-(comment "cd" isn't a valid command in Java as there is no reliable way to change the working directory)
+;; "cd" isn't a valid command in Java as there is no reliable way to change the working directory
 
 (def file ju/file)
 

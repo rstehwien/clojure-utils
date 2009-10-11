@@ -1,6 +1,7 @@
-(ns com.arcanearcade.clojure.utils.regex-utils
-;  #^{:author "Robert Stehwien",
-;     :doc "Clojure regular expression utilities"}
+(ns
+  #^{:author "Robert Stehwien",
+     :doc "Clojure regular expression utilities"}
+    com.arcanearcade.clojure.utils.regex-utils
   )
 
 (defn re-match? [re s] (not (nil? (re-matches re (str s)))))
