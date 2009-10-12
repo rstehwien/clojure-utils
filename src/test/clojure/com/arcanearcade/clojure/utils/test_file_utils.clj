@@ -1,6 +1,7 @@
 (ns com.arcanearcade.clojure.utils.test-file-utils
   (:require [com.arcanearcade.clojure.utils.file-utils :as fu])
   (:use clojure.test)
+  (:require [clojure.contrib.duck-streams :as du])
   (:import (java.util UUID)))
 
 (def test-dir (fu/file "." (str "test-dir-" (UUID/randomUUID))))
@@ -11,11 +12,12 @@
 
 (defn fixture-file-utils [test-function]
   (fu/mkdirs test-subdir)
-  (fu/touch test-file1)
+  (du/copy "some text"  test-file1)
   (fu/touch test-file2)
   (fu/touch (fu/file test-dir "file3.blarg"))
   (test-function)
-  (fu/rm_rf test-dir))
+  (fu/rm_rf test-dir)
+  )
 
 (use-fixtures :each fixture-file-utils)
 
@@ -175,6 +177,10 @@
     (is (fu/rm_rf subdir))
     (is (fu/not-exists? file (fu/ls_r test-dir)))
     ))
+
+(deftest test-crc32
+  (is (= 1337638330 (fu/crc32 test-file1)))
+  (is (= 0 (fu/crc32 test-file2))))
 
 (deftest test-re-filter-files-pass
   (is (< 0 (count (fu/re-filter-files #"\..*txt" (fu/ls test-dir))))))

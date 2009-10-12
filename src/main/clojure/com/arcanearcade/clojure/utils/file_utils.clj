@@ -4,8 +4,10 @@
   com.arcanearcade.clojure.utils.file-utils
   (:require [clojure.contrib.duck-streams :as du])
   (:require [clojure.contrib.java-utils :as ju])
+  (:require [clojure.contrib.seq-utils :as su])
   (:require [com.arcanearcade.clojure.utils.regex-utils :as ru])
-  (:import (java.io File)))
+  (:import (java.io File BufferedReader FileReader))
+  (:import (java.util.zip CRC32)))
 
 ;; "cd" isn't a valid command in Java as there is no reliable way to change the working directory
 
@@ -84,6 +86,20 @@
 
 (defn re-filter-files [re files] (ru/re-filter re files))
 (defn re-exists? [re files] (not-empty (re-filter-files re files)))
+
+(defn byte-seq [rdr]
+  (let [result (. rdr read)]
+    (if (= result -1)
+      (do (. rdr close) nil)
+      (lazy-seq (cons (byte result) (byte-seq rdr))))))
+
+(defn crc32 [f]
+  (let [rdr (BufferedReader. (FileReader. (file f)))
+        bytes (byte-seq rdr)
+        crc (CRC32.)]
+    (doseq [chunk (su/partition-all 256 bytes)] (.update crc (into-array Byte/TYPE chunk)))
+    (.getValue crc)))
+
 
 (let [file-seq-cache (ref {})]
 
