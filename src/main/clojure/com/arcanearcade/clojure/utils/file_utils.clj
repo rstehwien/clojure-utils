@@ -23,59 +23,60 @@
 
 (def separator (File/separator))
 (def path-separator (File/pathSeparator))
-(defn read? [f] (.canRead (file f)))
-(defn write? [f] (.canWrite (file f)))
+(defn read? [file-or-dir] (.canRead (file file-or-dir)))
+(defn write? [file-or-dir] (.canWrite (file file-or-dir)))
 
-(defmulti equals? (fn[f o] (class o)))
-(defmethod equals? String [f #^String s] (.equals (file f) (file s)))
-(defmethod equals? File [f #^File o] (.equals f o))
-(defmethod equals? :default [f o] (.equals (file f) o))
+(defmulti equals? (fn[file-or-dir o] (class o)))
+(defmethod equals? String [file-or-dir #^String s] (.equals (file file-or-dir) (file s)))
+(defmethod equals? File [file-or-dir #^File o] (.equals file-or-dir o))
+(defmethod equals? :default [file-or-dir o] (.equals (file file-or-dir) o))
 
-(defn absolute? [f] (.isAbsolute (file f)))
-(defn #^File absolute-file [f] (.getAbsoluteFile (file f)))
-(defn #^String absolute-path [f] (.getAbsolutePath (file f)))
+(defn absolute? [file-or-dir] (.isAbsolute (file file-or-dir)))
+(defn #^File absolute-file [file-or-dir] (.getAbsoluteFile (file file-or-dir)))
+(defn #^String absolute-path [file-or-dir] (.getAbsolutePath (file file-or-dir)))
 
-(defn absolute-path-equals? [f1 f2] (= (absolute-path f1) (absolute-path f2)))
+(defn absolute-path-equals? [file-or-dir1 file-or-dir2]
+  (= (absolute-path file-or-dir1) (absolute-path file-or-dir2)))
 
 (defn exists?
-  ([f] (.exists (file f)))
-  ([f col] (some #(absolute-path-equals? % f) col)))
+  ([file-or-dir] (.exists (file file-or-dir)))
+  ([file-or-dir coll] (some #(absolute-path-equals? % file-or-dir) coll)))
 
 (defn not-exists?
-  ([f] (not (exists? f)))
-  ([f col] (not (exists? f col))))
+  ([file-or-dir] (not (exists? file-or-dir)))
+  ([file-or-dir coll] (not (exists? file-or-dir coll))))
 
-(defn directory? [f] (.isDirectory (file f)))
+(defn directory? [file-or-dir] (.isDirectory (file file-or-dir)))
 
-(defn file? [f] (.isFile (file f)))
+(defn file? [file-or-dir] (.isFile (file file-or-dir)))
 
-(defn hidden? [f] (.isHidden (file f)))
+(defn hidden? [file-or-dir] (.isHidden (file file-or-dir)))
 
-(defn make-parents [f] (du/make-parents (file f)))
+(defn make-parents [file-or-dir] (du/make-parents (file file-or-dir)))
 
-(defn #^String parent [f] (.getParent (file f)))
+(defn #^String parent [file-or-dir] (.getParent (file file-or-dir)))
 
-(defn #^File parent-file [f] (.getParentFile (file f)))
+(defn #^File parent-file [file-or-dir] (.getParentFile (file file-or-dir)))
 
-(defn file-name [f] (.getName (file f)))
+(defn file-name [file-or-dir] (.getName (file file-or-dir)))
 
 (def pwd du/pwd)
 
-(defn touch [f] (du/append-spit (file f) ""))
+(defn touch [file-or-dir] (du/append-spit (file file-or-dir) ""))
 
 (defn mv [from to] (.renameTo (file from) (file to)))
 
-(defn mkdir [f] (.mkdir (file f)))
+(defn mkdir [file-or-dir] (.mkdir (file file-or-dir)))
 
-(defn mkdirs [f] (.mkdirs (file f)))
+(defn mkdirs [file-or-dir] (.mkdirs (file file-or-dir)))
 
 (defn ls
   ([] (ls "."))
-  ([f] (seq (.listFiles (file f)))))
+  ([file-or-dir] (seq (.listFiles (file file-or-dir)))))
 
 (defn ls_r
   ([] (ls_r "."))
-  ([f] (file-seq (file f))))
+  ([file-or-dir] (file-seq (file file-or-dir))))
 
 (defn cp [from to]
   (let [dest (if (directory? to) (file to (file-name from)) to)]
@@ -84,8 +85,8 @@
           (doseq [cur (ls from)] (cp cur dest)))
       (du/copy from dest))))
 
-(defn rm [f] (.delete (file f)))
-(defn delete-on-exit [f] (.deleteOnExit (file f)))
+(defn rm [file-or-dir] (.delete (file file-or-dir)))
+(defn delete-on-exit [file-or-dir] (.deleteOnExit (file file-or-dir)))
 
 (defn rm_rf [path]
   (let [p (file path)]
@@ -101,8 +102,8 @@
       (do (. rdr close) nil)
       (lazy-seq (cons (byte result) (byte-seq rdr))))))
 
-(defn crc32 [f]
-  (let [rdr (BufferedReader. (FileReader. (file f)))
+(defn crc32 [file-or-dir]
+  (let [rdr (BufferedReader. (FileReader. (file file-or-dir)))
         bytes (byte-seq rdr)
         crc (CRC32.)]
     (doseq [chunk (su/partition-all 256 bytes)] (.update crc (into-array Byte/TYPE chunk)))
@@ -111,7 +112,7 @@
 
 (let [file-seq-cache (ref {})]
 
-  (defn file-seq-cache-key [f] (str (file f)))
+  (defn file-seq-cache-key [file-or-dir] (str (file file-or-dir)))
 
   (defn file-seq-cache-keys [] (keys @file-seq-cache))
 
@@ -123,7 +124,7 @@
        @file-seq-cache))
 
   (defn get-file-seq-cache [path]
-    (let [f (file path) key (file-seq-cache-key f)]
+    (let [file-or-dir (file path) key (file-seq-cache-key file-or-dir)]
       (dosync
        (when-not (contains? @file-seq-cache key)
          (alter file-seq-cache conj {path (file-seq (file key))}))
