@@ -179,8 +179,8 @@
     ))
 
 (deftest test-crc32
-  (is (= 1337638330 (fu/crc32 test-file1)))
-  (is (= 0 (fu/crc32 test-file2))))
+  (is (= 1337638330 (fu/crc32-file test-file1)))
+  (is (= 0 (fu/crc32-file test-file2))))
 
 (deftest test-re-filter-files-pass
   (is (< 0 (count (fu/re-filter-files #"\..*txt" (fu/ls test-dir))))))

@@ -96,19 +96,25 @@
 (defn re-filter-files [re files] (ru/re-filter re files))
 (defn re-exists? [re files] (not-empty (re-filter-files re files)))
 
-(defn byte-seq [rdr]
+(defn byte-seq-reader [rdr]
   (let [result (. rdr read)]
     (if (= result -1)
       (do (. rdr close) nil)
-      (lazy-seq (cons (byte result) (byte-seq rdr))))))
+      (lazy-seq (cons (byte result) (byte-seq-reader rdr))))))
 
-(defn crc32 [file-or-dir]
-  (let [rdr (BufferedReader. (FileReader. (file file-or-dir)))
-        bytes (byte-seq rdr)
-        crc (CRC32.)]
+(defn byte-seq-file [afile]
+  (byte-seq-reader (BufferedReader. (FileReader. (file afile)))))
+
+
+;; TODO make crc32 crc32-file and crc32-reader a multimethod
+
+(defn- crc32 [bytes]
+  (let [crc (CRC32.)]
     (doseq [chunk (su/partition-all 256 bytes)] (.update crc (into-array Byte/TYPE chunk)))
     (.getValue crc)))
 
+(defn crc32-file [afile] (crc32 (byte-seq-file afile)))
+(defn crc32-reader [rdr] (crc32 (byte-seq-reader rdr)))
 
 (let [file-seq-cache (ref {})]
 
