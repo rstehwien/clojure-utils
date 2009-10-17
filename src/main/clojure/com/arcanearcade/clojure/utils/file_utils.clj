@@ -13,6 +13,7 @@
   (:require [clojure.contrib.duck-streams :as du])
   (:require [clojure.contrib.java-utils :as ju])
   (:require [clojure.contrib.seq-utils :as su])
+  (:require [clojure.contrib.def :as ccd])
   (:require [com.arcanearcade.clojure.utils.regex-utils :as ru])
   (:import (java.io File BufferedReader FileReader))
   (:import (java.util.zip CRC32)))
@@ -137,3 +138,4 @@
        (@file-seq-cache key))))
 
   )
+
