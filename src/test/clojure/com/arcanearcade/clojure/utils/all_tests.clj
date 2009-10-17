@@ -8,5 +8,6 @@
 (run-tests
  'com.arcanearcade.clojure.utils.test-file-utils
  'com.arcanearcade.clojure.utils.test-regex-utils
+ ;; make sure test-timer-agent runs last as it calls (shutdown-agents)
  'com.arcanearcade.clojure.utils.test-timer-agent
  )

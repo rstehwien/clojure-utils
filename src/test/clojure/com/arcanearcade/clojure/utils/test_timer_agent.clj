@@ -2,6 +2,13 @@
   (:require [com.arcanearcade.clojure.utils.timer-agent :as ta])
   (:use clojure.test))
 
+(defn fixture-file-utils [test-function]
+  (test-function)
+  (shutdown-agents)
+  )
+
+(use-fixtures :once fixture-file-utils)
+
 (deftest test-timer-agent-add-five
   (let [timer (ta/create-timer-agent #(+ % 5) :data 8 :run-once? true :timer-ms 500)]
     (is (= 8 (:data @timer)))
